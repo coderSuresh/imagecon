@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/common/header";
+import Footer from "@/components/common/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,17 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Image Converter",
-  description: "Privacy-first free image converter that runs in your browser. Your images never leave your device.",
+  title: "Free Online Image Converter | ImageCon",
+  description: "Privacy-first open-source free image converter that runs in your browser. Your images never leave your device. Batch convert and compress images to modern formats like WebP and AVIF.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="bg-primary/2">
+        <Header />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

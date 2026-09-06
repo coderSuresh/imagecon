@@ -3,25 +3,48 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --gray: #efefef;
+  --primary: #EF6905;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-gray: var(--gray);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+    --gray: #efefef;
+    --primary: #FF8C00;
   }
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
   max-width: 1600px;
   margin: 0 auto;
+}
+
+@layer components {
+  .container-padding {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .container-padding {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
 }
