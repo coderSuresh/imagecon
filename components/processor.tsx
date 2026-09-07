@@ -1,6 +1,6 @@
 "use client"
 
-import { formatFileSize, getFileType } from "@/app/utils/helpers"
+import { formatFileSize, getFileType } from "@/utils/helpers"
 import { useState } from "react"
 
 interface ProcessorProps {
@@ -81,7 +81,7 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
                             ))}
                         </tbody>
                     </table>
-                </div >
+                </div>
             )}
 
         </div >
