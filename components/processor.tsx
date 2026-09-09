@@ -74,7 +74,7 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
     }
 
     const handleDownload = () => {
-        if (jobs.length === 0) {
+        if (completedJobs.length === 0) {
             return
         }
 
