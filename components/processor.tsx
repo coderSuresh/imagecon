@@ -48,7 +48,7 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
 
         if (workerManager.current === null) {
             workerManager.current = new WorkerManager(
-                3,
+                10,
                 (job) => {
                     job.status = "processing"
 
