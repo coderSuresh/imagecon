@@ -1,6 +1,6 @@
-import { convertImage } from "./convert-image"
 import { ImageQueue } from "./queue"
 import { ImageJob } from "./types"
+import { WorkerManager } from "./worker-manager"
 
 export class Scheduler {
 
@@ -8,6 +8,8 @@ export class Scheduler {
 
     constructor(
         private queue: ImageQueue,
+        private workerManager = new WorkerManager(),
+        private onJobUpdate?: (job: ImageJob) => void
     ) { }
 
     get allJobs() {
@@ -22,30 +24,53 @@ export class Scheduler {
         this.jobs = []
     }
 
-    private async processNext() {
-        const job = this.queue.next()
+    async retry(job: ImageJob) {
 
-        if (!job) {
-            return
+        job.status = "queued"
+        job.progress = 0
+        job.error = undefined
+        job.output = undefined
+
+        this.onJobUpdate?.(job)
+
+        await this.process(job)
+    }
+
+    private async processNext() {
+        const promises: Promise<void>[] = []
+        let job: ImageJob | undefined
+
+        while (job = this.queue.next()) {
+            this.jobs.push(job)
+            
+            const promise = this.process(job)
+            promises.push(promise)
         }
+
+        await Promise.all(promises)
+    }
+
+    private async process(job: ImageJob) {
 
         try {
 
-            const output = await convertImage(job)
+            const output = await this.workerManager.process(job)
 
             job.output = output
             job.status = "completed"
+            job.progress = 100
 
-            this.jobs.push(job)
+            this.onJobUpdate?.(job)
+
         } catch (error) {
+
             job.status = "failed"
 
-            const errorMessage = error instanceof Error ? error.message : String(error)
-            job.error = errorMessage
-
-            this.jobs.push(job)
+            job.error = error instanceof Error
+                ? error.message
+                : String(error)
+            
+            this.onJobUpdate?.(job)
         }
-
-        await this.processNext()
     }
 }

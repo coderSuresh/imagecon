@@ -21,3 +21,22 @@ export interface ImageJob {
     output?: Blob
     error?: string
 }
+
+export interface WorkerRequest {
+    id: string
+    file: File
+    outputFormat: OutputFormat
+}
+
+export interface WorkerResponse {
+    id: string
+    success: boolean
+    output?: Blob
+    error?: string
+}
+
+export interface WorkerTask {
+    job: ImageJob
+    resolve: (output: Blob) => void
+    reject: (error: Error) => void
+}

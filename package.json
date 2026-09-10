@@ -9,7 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@jsquash/avif": "^2.1.1",
     "jszip": "^3.10.2",
+    "libheif-js": "^1.23.2",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"

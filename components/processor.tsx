@@ -4,7 +4,7 @@ import { DownloadManager } from "@/processor/download-manager"
 import { ImageQueue } from "@/processor/queue"
 import { Scheduler } from "@/processor/scheduler"
 import { ImageJob, OutputFormat } from "@/processor/types"
-import { formatFileSize, getFileType } from "@/utils/helpers"
+import { WorkerManager } from "@/processor/worker-manager"
 import { useRef, useState } from "react"
 
 interface ProcessorProps {
@@ -21,15 +21,10 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
     const queue = useRef<ImageQueue | null>(null)
     const scheduler = useRef<Scheduler | null>(null)
     const downloadManager = useRef<DownloadManager | null>(null)
+    const workerManager = useRef<WorkerManager | null>(null)
 
     if (queue.current === null) {
         queue.current = new ImageQueue()
-    }
-
-    if (scheduler.current === null) {
-        scheduler.current = new Scheduler(
-            queue.current
-        )
     }
 
     if (downloadManager.current === null) {
@@ -39,6 +34,7 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
     const removeFile = (index: number) => {
         if (files) {
             setDroppedFiles(prevFiles => prevFiles!.filter((_, i) => i !== index))
+            setJobs(prevJobs => prevJobs.filter((_, i) => i !== index))
         }
     }
 
@@ -49,6 +45,27 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
     const handleConvert = async () => {
 
         if (!files || files.length === 0) return
+
+        if (workerManager.current === null) {
+            workerManager.current = new WorkerManager(
+                3,
+                (job) => {
+                    job.status = "processing"
+
+                    setJobs([...scheduler.current!.allJobs])
+                }
+            )
+        }
+
+        if (scheduler.current === null) {
+            scheduler.current = new Scheduler(
+                queue.current!,
+                workerManager.current,
+                (_) => {
+                    setJobs([...scheduler.current!.allJobs])
+                }
+            )
+        }
 
         queue.current?.clear()
         scheduler.current?.clear()
@@ -73,6 +90,15 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
         }
     }
 
+    const handleRetry = async (job: ImageJob) => {
+
+        if (!scheduler.current) {
+            return
+        }
+
+        await scheduler.current.retry(job)
+    }
+
     const handleDownload = () => {
         if (completedJobs.length === 0) {
             return
@@ -85,6 +111,7 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
         <div>
 
             {files && files.length > 0 && (
+
                 <div className="mt-6">
 
                     <div className="flex flex-wrap justify-between items-center">
@@ -144,32 +171,46 @@ const Processor = ({ files, setDroppedFiles }: ProcessorProps) => {
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="text-start border border-gray-300 px-4 py-2">File Name</th>
-                                <th className="text-start sm:table-cell hidden border border-gray-300 px-4 py-2">Size</th>
-                                <th className="text-start sm:table-cell hidden border border-gray-300 px-4 py-2">Format</th>
+                                <th className="text-start border border-gray-300 px-4 py-2">Status</th>
                                 <th className="text-start border border-gray-300 px-4 py-2">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.from(files).map((file, index) => (
-                                <tr key={index}>
-                                    <td className="border border-gray-300 px-4 py-2">{file.name}</td>
-                                    <td className="sm:table-cell hidden border border-gray-300 px-4 py-2">{formatFileSize(file.size)}</td>
-                                    <td className="sm:table-cell hidden border border-gray-300 px-4 py-2">{getFileType(file)}</td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <button
-                                            aria-label="Remove file"
-                                            onClick={() => removeFile(index)}
-                                        >
-                                            ❌
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {Array.from(files).map((file, index) => {
+                                const job = jobs.find(job => job.file === file)
+
+                                return (
+                                    <tr key={index}>
+                                        <td className="border border-gray-300 px-4 py-2">{file.name}</td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                            {!job && "pending"}
+                                            {job?.status}
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2">
+                                            <button
+                                                aria-label="Remove file"
+                                                onClick={() => removeFile(index)}
+                                            >
+                                                ❌
+                                            </button>
+
+                                            {job?.status === "failed" && (
+                                                <button
+                                                    onClick={() => handleRetry(job)}
+                                                    className="ml-3 font-bold text-lg"
+                                                    aria-label="Retry conversion"
+                                                >
+                                                    ↻
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
             )}
-
         </div>
     )
 }

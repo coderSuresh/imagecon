@@ -1,46 +1,38 @@
-import { ImageJob } from "./types"
+import { WorkerResponse, ImageJob } from "./types"
 
-export async function convertImage(job: ImageJob): Promise<Blob> {
-    const bitmap = await createImageBitmap(job.file)
+const worker = new Worker(
+    new URL("./image-worker.ts", import.meta.url)
+)
 
-    const canvas = document.createElement("canvas")
+export function convertImage(job: ImageJob): Promise<Blob> {
+    return new Promise((resolve, reject) => {
 
-    canvas.width = bitmap.width
-    canvas.height = bitmap.height
+        const handleMessage = (event: MessageEvent<WorkerResponse>) => {
+            const response = event.data
 
-    const context = canvas.getContext("2d")
+            if (response.id !== job.id) {
+                return
+            }
 
-    if (!context) {
-        bitmap.close()
-        throw new Error("Could not create canvas context")
-    }
+            worker.removeEventListener("message", handleMessage)
 
-    context.drawImage(bitmap, 0, 0)
+            if (response.success && response.output) {
+                resolve(response.output)
+            } else {
+                reject(
+                    new Error(
+                        response.error ?? "Image conversion failed"
+                    )
+                )
+            }
+        }
 
-    bitmap.close()
+        worker.addEventListener("message", handleMessage)
 
-    const mimeTypes = {
-        jpg: "image/jpeg",
-        png: "image/png",
-        webp: "image/webp",
-        avif: "image/avif"
-    }
-
-    const mimeType = mimeTypes[job.outputFormat]
-
-    const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-            (result) => {
-                if (result) {
-                    resolve(result)
-                } else {
-                    reject(new Error("Failed to convert image"))
-                }
-            },
-            mimeType,
-            0.9
-        )
+        worker.postMessage({
+            id: job.id,
+            file: job.file,
+            outputFormat: job.outputFormat,
+        })
     })
-
-    return blob
 }

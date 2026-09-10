@@ -11,7 +11,7 @@ const Uploader = () => {
     const appendToDroppedFiles = (files: File[]) => {
         setDroppedFiles(prevFiles => {
             if (prevFiles) {
-                return [...prevFiles, ...files];
+                return [...files, ...prevFiles];
             } else {
                 return files;
             }
@@ -22,8 +22,6 @@ const Uploader = () => {
         e.preventDefault();
 
         setIsDragActive(true);
-
-        console.log("Drag over")
     }
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -39,21 +37,17 @@ const Uploader = () => {
         e.preventDefault();
 
         setIsDragActive(true);
-
-        console.log("Drag enter")
     }
 
     const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
 
         setIsDragActive(false);
-
-        console.log("Drag leave")
     }
 
     useEffect(() => {
         window.addEventListener('beforeunload', (e: BeforeUnloadEvent) => {
-            // e.preventDefault();
+            e.preventDefault();
         });
     }, []);
 
@@ -81,7 +75,7 @@ const Uploader = () => {
                         Drag & drop images here, or <span className="text-primary font-medium"><u>browse</u></span>
                     </p>
                     <p className="text-foreground/70 text-sm mt-2">
-                        Supports WebP, PNG, JPEG, AVIF, SVG, HEIC
+                        Supports WebP, PNG, JPEG, AVIF, HEIC
                     </p>
                 </label>
 
@@ -94,7 +88,7 @@ const Uploader = () => {
                 />
             </div>
 
-           <Processor files={droppedFiles}  setDroppedFiles={setDroppedFiles} />
+            <Processor files={droppedFiles} setDroppedFiles={setDroppedFiles} />
 
         </section>
 

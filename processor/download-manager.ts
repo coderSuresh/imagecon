@@ -29,11 +29,15 @@ export class DownloadManager {
         }
 
         const zip = new JSZip()
+        const usedNames = new Set<string>()
 
         completedJobs.forEach(job => {
             if (job.output) {
                 const extension = job.outputFormat
-                zip.file(this.getFileName(job.file.name, extension), job.output)
+                zip.file(
+                    this.getUniqueFileName(job.file.name, extension, usedNames),
+                    job.output
+                )
             }
         })
 
@@ -62,5 +66,28 @@ export class DownloadManager {
         const nameWithoutExtension = originalName.substring(0, originalName.lastIndexOf("."))
 
         return `${nameWithoutExtension}.${extension}`
+    }
+
+    private getUniqueFileName(
+        fileName: string,
+        extension: string,
+        usedNames: Set<string>
+    ) {
+        const baseName = fileName.substring(
+            0,
+            fileName.lastIndexOf(".")
+        )
+
+        let name = `${baseName}.${extension}`
+        let counter = 1
+
+        while (usedNames.has(name)) {
+            name = `${baseName} (${counter}).${extension}`
+            counter++
+        }
+
+        usedNames.add(name)
+
+        return name
     }
 }
