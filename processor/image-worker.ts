@@ -119,10 +119,7 @@ self.onmessage = async (
 
         if (outputFormat === "avif") {
 
-            console.log("AVIF: starting encode")
-
             const avifBuffer = await encodeAvif(imageData, { speed: 8 })
-            console.log("AVIF: encode finished")
 
             blob = new Blob(
                 [avifBuffer],
