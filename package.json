@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@jsquash/avif": "^2.1.1",
+    "@jsquash/avif": "^1.1.2-single-thread-only",
     "jszip": "^3.10.2",
     "libheif-js": "^1.23.2",
     "next": "16.3.4",
