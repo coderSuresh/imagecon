@@ -24,7 +24,7 @@ const Home = () => {
           Fast, Free & Secure <br /> <span className="text-primary">Online Image Converter</span>
         </h1>
         <p className="text-foreground/70 max-w-3xl mx-auto">
-          Effortlessly convert and compress PNG, JPG, WebP, SVG, and AVIF images in seconds. Optimize graphics for Google Core Web Vitals with instant lossless compression and batch processing—executed 100% privately in your browser with zero cloud uploads.
+          Effortlessly convert images between PNG, JPG, WebP, HEIC and AVIF images in seconds. Optimize graphics for Google Core Web Vitals with instant lossless compression and batch processing—executed 100% privately in your browser with zero cloud uploads.
         </p>
 
         <ul className="flex flex-row flex-wrap items-center justify-center gap-4 mt-6">
